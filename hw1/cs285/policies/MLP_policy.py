@@ -110,7 +110,6 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor) -> Any:
-        observation = observation
         if self.discrete:
             return self.logits_na(observation)
         else:
@@ -136,16 +135,20 @@ class MLPPolicySL(MLPPolicy):
     ):
         # TODO: update the policy and return the loss
         self.optimizer.zero_grad()
-        observations_t = torch.tensor(observations, dtype=torch.float32)
-        expert_actions_t = torch.tensor(actions, dtype=torch.float32)
+        observations_t = torch.tensor(observations, dtype=torch.float32, requires_grad=True)
+        expert_actions_t = torch.tensor(actions, dtype=torch.float32, requires_grad=True)
         loss = None
         if self.discrete:
             policy_logits_t = self.forward(observations_t)
             loss = self.loss(policy_logits_t, expert_actions_t)
         else:
+            # print("HERE HERE HERE")
             policy_dists_t = self.forward(observations_t)
+            # print("policy_dists_t", policy_dists_t)
             policy_actions_t = policy_dists_t.sample()
+            # print("policy_actions_t", policy_actions_t)
             loss = self.loss(policy_actions_t, expert_actions_t)
+            # print("loss", loss)
         
         loss.backward()
         self.optimizer.step()
