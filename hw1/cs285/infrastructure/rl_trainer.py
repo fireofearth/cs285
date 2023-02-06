@@ -213,8 +213,10 @@ class RL_Trainer(object):
         # HINT: query the policy (using the get_action function) with paths[i]["observation"]
         # and replace paths[i]["action"] with these expert labels
         for path in paths:
-            expert_action = expert_policy.get_action(path["observation"])[0]
-            path["action"] = expert_action
+            # print("path > action", path["action"].shape)
+            path["action"] = expert_policy.get_action(path["observation"])
+            # expert_action = path["action"]
+            # print("expert_action", expert_action.shape)
         return paths
 
     ####################################
