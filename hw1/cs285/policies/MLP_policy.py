@@ -135,8 +135,12 @@ class MLPPolicySL(MLPPolicy):
     ):
         # TODO: update the policy and return the loss
         self.optimizer.zero_grad()
-        observations_t = torch.tensor(observations, dtype=torch.float32, requires_grad=True)
-        expert_actions_t = torch.tensor(actions, dtype=torch.float32, requires_grad=True)
+        observations_t = torch.tensor(
+            observations, dtype=torch.float32, device=ptu.device, requires_grad=True
+        )
+        expert_actions_t = torch.tensor(
+            actions, dtype=torch.float32, device=ptu.device, requires_grad=True
+        )
         loss = None
         if self.discrete:
             policy_logits_t = self.forward(observations_t)
