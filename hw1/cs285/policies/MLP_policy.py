@@ -88,7 +88,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             observation = obs[None]
 
         # TODO return the action that the policy prescribes
-        observation_t = torch.tensor(observation, dtype=torch.float32)
+        observation_t = torch.tensor(observation, dtype=torch.float32, device=ptu.device,)
         if self.discrete:
             policy_logits_t = self.forward(observation_t)
             action_t = torch.max(policy_logits_t, 1)
@@ -110,6 +110,8 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         if self.discrete:
             return self.logits_na(observation)
         else:
+            # print("in MLPPolicy.forward()")
+            # print("observation", observation.device)
             means = self.mean_net(observation)
             return torch.distributions.normal.Normal(means, torch.exp(self.logstd))
 
@@ -140,11 +142,12 @@ class MLPPolicySL(MLPPolicy):
         )
         loss = None
         if self.discrete:
-            policy_logits_t = self.forward(observations_t)
+            policy_logits_t = self(observations_t)
             loss = self.loss(policy_logits_t, expert_actions_t)
         else:
-            # print("HERE HERE HERE")
-            policy_dists_t = self.forward(observations_t)
+            # print("in MLPPolicySL.update()")
+            # print("observations_t", observations_t.device)
+            policy_dists_t = self(observations_t)
             # print("policy_dists_t", policy_dists_t)
             policy_actions_t = policy_dists_t.sample()
             # print("policy_actions_t", policy_actions_t)
